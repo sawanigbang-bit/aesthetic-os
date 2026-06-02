@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Aesthetic OS (GitHub Ready)</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;500&family=Pacifico&family=Comic+Neue:wght@300;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+--bg:#ffe4ec;
+--card:rgba(255,255,255,0.75);
+--accent:#ff4fa3;
+--text:#b34778;
+--font:'Quicksand', sans-serif;
+}
+
+body{
+margin:0;
+background:var(--bg);
+color:var(--text);
+font-family:var(--font);
+transition:0.4s ease;
+}
+
+.dashboard{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:15px;
+padding:15px;
+min-height:100vh;
+}
+
+.card{
+background:var(--card);
+backdrop-filter:blur(12px);
+border-radius:18px;
+padding:15px;
+box-shadow:0 10px 25px rgba(0,0,0,0.12);
+}
+
+h2{margin:0 0 10px;}
+
+button{
+background:var(--accent);
+border:none;
+color:white;
+padding:6px 10px;
+border-radius:10px;
+cursor:pointer;
+}
+
+input,textarea,select{
+width:100%;
+padding:6px;
+border-radius:10px;
+border:1px solid #f3c6d4;
+box-sizing:border-box;
+}
+
+/* CLOCK */
+.clock{
+display:flex;
+justify-content:center;
+gap:6px;
+font-size:2rem;
+font-weight:bold;
+color:var(--accent);
+}
+
+.flip{
+background:white;
+padding:10px;
+border-radius:10px;
+min-width:45px;
+text-align:center;
+}
+
+/* CALC */
+.calc-grid{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:6px;
+}
+
+/* NOTES */
+.note{
+background:white;
+padding:6px;
+margin-top:6px;
+border-radius:10px;
+display:flex;
+justify-content:space-between;
+}
+
+/* IMAGE */
+img{
+width:100%;
+border-radius:12px;
+margin-top:8px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="dashboard">
+
+<!-- THEME + FONT -->
+<div class="card">
+<h2>🎨 Theme</h2>
+<select onchange="setTheme(this.value)">
+<option value="pink">Pink</option>
+<option value="black">Black</option>
+<option value="cream">Cream</option>
+<option value="blue">Blue</option>
+<option value="purple">Purple</option>
+<option value="green">Green</option>
+<option value="yellow">Yellow</option>
+</select>
+
+<h2>🖋 Font</h2>
+<select onchange="setFont(this.value)">
+<option value="quicksand">Quicksand</option>
+<option value="mochi">Mochi</option>
+<option value="cute">Cute</option>
+</select>
+</div>
+
+<!-- CLOCK -->
+<div class="card">
+<h2>⏰ Clock</h2>
+<div class="clock">
+<div class="flip" id="h">00</div>:
+<div class="flip" id="m">00</div>
+</div>
+</div>
+
+<!-- TIMER -->
+<div class="card">
+<h2>⏳ Timer</h2>
+<input id="minInput" placeholder="minutes">
+<button onclick="startTimer()">Start</button>
+<button onclick="resetTimer()">Reset</button>
+<div id="timerDisplay">00:00</div>
+</div>
+
+<!-- TODO -->
+<div class="card">
+<h2>📝 To-Do</h2>
+<input id="task">
+<button onclick="addTask()">Add</button>
+<div id="tasks"></div>
+</div>
+
+<!-- CALC -->
+<div class="card">
+<h2>🧮 Calculator</h2>
+<input id="display" disabled>
+
+<div class="calc-grid">
+<button onclick="p('7')">7</button><button onclick="p('8')">8</button><button onclick="p('9')">9</button><button onclick="p('/')">/</button>
+<button onclick="p('4')">4</button><button onclick="p('5')">5</button><button onclick="p('6')">6</button><button onclick="p('*')">*</button>
+<button onclick="p('1')">1</button><button onclick="p('2')">2</button><button onclick="p('3')">3</button><button onclick="p('-')">-</button>
+<button onclick="p('0')">0</button><button onclick="clr()">C</button><button onclick="eq()">=</button><button onclick="p('+')">+</button>
+</div>
+</div>
+
+<!-- NOTES -->
+<div class="card">
+<h2>🗒 Notes</h2>
+<textarea id="noteInput"></textarea>
+<button onclick="addNote()">Save</button>
+<div id="notes"></div>
+</div>
+
+<!-- SPOTIFY -->
+<div class="card">
+<h2>🎧 Spotify</h2>
+<iframe width="100%" height="160"
+src="https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M"></iframe>
+</div>
+
+<!-- CHAT -->
+<div class="card">
+<h2>🤖 Chat</h2>
+<div>Ask me anything ✨</div>
+</div>
+
+<!-- GRAMMARLY -->
+<div class="card">
+<h2>✍ Grammarly</h2>
+<textarea id="text"></textarea>
+<button onclick="check()">Check</button>
+<div id="result"></div>
+</div>
+
+<!-- GALLERY -->
+<div class="card">
+<h2>🖼 Gallery</h2>
+<div id="gallery"></div>
+</div>
+
+</div>
+
+<script>
+
+/* CLOCK */
+setInterval(()=>{
+let d=new Date();
+h.innerText=String(d.getHours()).padStart(2,"0");
+m.innerText=String(d.getMinutes()).padStart(2,"0");
+},1000);
+
+/* TODO */
+function addTask(){
+let v=task.value;
+if(!v)return;
+tasks.innerHTML+="✔ "+v+"<br>";
+task.value="";
+}
+
+/* CALC */
+let e="";
+function p(v){e+=v;display.value=e}
+function eq(){try{e=eval(e)+"";display.value=e}catch{display.value="error"}}
+function clr(){e="";display.value=""}
+
+/* TIMER */
+let t;
+function startTimer(){
+let time=parseInt(minInput.value)*60;
+clearInterval(t);
+t=setInterval(()=>{
+if(time<=0){clearInterval(t);timerDisplay.innerText="Done";return;}
+time--;
+timerDisplay.innerText=`${Math.floor(time/60)}:${(time%60).toString().padStart(2,"0")}`;
+},1000);
+}
+function resetTimer(){
+clearInterval(t);
+timerDisplay.innerText="00:00";
+}
+
+/* NOTES */
+let notes=[];
+function addNote(){
+let v=noteInput.value;
+if(!v)return;
+notes.push(v);
+noteInput.value="";
+renderNotes();
+}
+function renderNotes(){
+notesEl.innerHTML="";
+notes.forEach((n,i)=>{
+notesEl.innerHTML+=`<div class="note">${n}<button onclick="del(${i})">X</button></div>`;
+});
+}
+function del(i){notes.splice(i,1);renderNotes();}
+let notesEl=document.getElementById("notes");
+
+/* THEMES */
+const themes={
+pink:["#ffe4ec","#ff4fa3","#b34778"],
+black:["#0f0f0f","#ffffff","#ffffff"],
+cream:["#fff3e6","#d17b00","#6b4b00"],
+blue:["#e4f1ff","#2b7cff","#1b3c6b"],
+purple:["#efe4ff","#a855f7","#4b2c7f"],
+green:["#e6fff0","#2ecc71","#145a32"],
+yellow:["#fff9d6","#f1c40f","#7a5a00"]
+};
+
+function setTheme(t){
+let [bg,acc,txt]=themes[t];
+document.body.style.background=bg;
+document.documentElement.style.setProperty("--accent",acc);
+document.documentElement.style.setProperty("--text",txt);
+renderImages(t);
+}
+
+/* FONT */
+function setFont(f){
+if(f==="quicksand")document.documentElement.style.setProperty("--font","'Quicksand', sans-serif");
+if(f==="mochi")document.documentElement.style.setProperty("--font","'Pacifico', cursive");
+if(f==="cute")document.documentElement.style.setProperty("--font","'Comic Neue', cursive");
+}
+
+/* IMAGES (GITHUB READY PATHS) */
+const images={
+pink:["pink1.png","pink2.png"],
+black:["black1.jpg","black2.jpg"],
+cream:["cream1.jpg","cream2.jpg"],
+blue:["blue1.jpg","blue2.jpg"],
+purple:["purple1.jpg","purple2.jpg"],
+green:["green1.jpg","green2.jpg"],
+yellow:["yellow1.jpg","yellow2.jpg"]
+};
+function renderImages(t){
+gallery.innerHTML="";
+(images[t]||[]).forEach(i=>{
+let img=document.createElement("img");
+img.src=i;
+gallery.appendChild(img);
+});
+}
+function check(){
+const text=document.getElementById("text").value;
+
+if(text.trim()===""){
+document.getElementById("result").innerText="Please enter some text.";
+return;
+}
+
+document.getElementById("result").innerText="Looks good! ✨";
+}
+/* INIT */
+renderImages("pink");
+
+</script>
+
+</body>
+</html>
