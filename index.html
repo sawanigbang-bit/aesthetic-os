@@ -304,6 +304,29 @@ document.getElementById("result").innerText="Looks good! ✨";
 }
 /* INIT */
 renderImages("pink");
+function loadPlaylist(){
+
+let link =
+document.getElementById("playlistLink").value;
+
+let match =
+link.match(/playlist/([a-zA-Z0-9]+)/);
+
+if(match){
+
+let playlistId = match[1];
+
+document.getElementById("spotifyPlayer").src =
+"https://open.spotify.com/embed/playlist/" +
+playlistId;
+
+}else{
+
+alert("Paste a valid Spotify playlist link!");
+
+}
+
+}
 
 </script>
 
